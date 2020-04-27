@@ -1,6 +1,6 @@
 # Escaig split
 
-A script to compute the orientation factor in the Friedel-Escaig model of cross-slip in fcc crystals.
+A script to compute the shear stresses and orientation factor in the Friedel-Escaig model of cross-slip in fcc crystals in tension (reverse the values for compression).
 
 ```escaig-split.py``` draws:
 
