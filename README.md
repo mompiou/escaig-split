@@ -10,6 +10,8 @@ A script to compute the shear stresses and orientation factor in the Friedel-Esc
 
 - the diffrence in the SF of partial dislocations in the cross-slip plane (tau_d/sigma)
 
-- the orientation factor prop to (2/3 tau_d +tau_d')/tau
+- the orientation factor prop to (-2/3 tau_d +tau_d')/tau
 
 ![](img.png)
+
+ref: Bonneville, J., Esacaig B., Acta Metallurgica, 27, 1477-1486, 1979.

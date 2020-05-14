@@ -101,7 +101,7 @@ def shockley(b,n):
 	sl=np.dot(Rot(90,r[0],r[1],r[2]),n)*np.sqrt(2)
 	st=6*(b/2-sl/6)	
 	
-	return sl,st
+	return st,sl
 
 
 def unique_rows(a):
@@ -168,7 +168,7 @@ def schmid(B, N, T):
 #
 ##############################"
 
-f= open("escaig-result2.txt","w+") #file where results will be written
+f= open("escaig-result-compression.txt","w+") #file where results will be written
 
 b=np.array([1,1,0])
 n=np.array([1,1,1]) #primary Burgers and plane normals type in crystal coordinates

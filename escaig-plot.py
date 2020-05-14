@@ -15,14 +15,14 @@ a=figure.add_subplot('111')
 #######################
 # t primary
 
-sc=a.tricontourf(data[:,3],data[:,4], data[:,0], 101,cmap=plt.cm.seismic)
+#sc=a.tricontourf(data[:,3],data[:,4], data[:,0], 101,cmap=plt.cm.seismic)
 
 ###################
 # td cross slip 
 
 #r=np.max((np.abs(data[:,2].max()),np.abs(data[:,2].min())))
 #levels=np.linspace(-r, r,num=255)
-#sc=a.tricontourf(data[:,3],data[:,4], data[:,2], levels=levels,cmap=plt.cm.seismic)
+#sc=a.tricontourf(data[:,3],data[:,4], -data[:,2], levels=levels,cmap=plt.cm.seismic)
 
 ###################
 # td' primary 
@@ -34,8 +34,9 @@ sc=a.tricontourf(data[:,3],data[:,4], data[:,0], 101,cmap=plt.cm.seismic)
 
 ######################
 #orientation factor
-
-#sc=a.tricontourf(data[:,3],data[:,4], np.abs((2*data[:,2]/3+data[:,1])/data[:,0]), 101,cmap=plt.cm.seismic)
+m=((-2*data[:,2]/3+data[:,1])/data[:,0])
+sc=a.tricontourf(data[:,3],data[:,4], m,301,cmap=plt.cm.seismic)
+#a.tricontour(data[:,3],data[:,4], m, colors='k')
 
 
 
