@@ -37,6 +37,8 @@ def rotation(phi1, phi, phi2):
                   [np.sin(phi) * np.sin(phi2), np.cos(phi2) * np.sin(phi), np.cos(phi)]], float)
     return R
 
+    
+
 def schmid_calc(b, n, T):
     global M
     n = np.dot(M, n)
@@ -45,7 +47,7 @@ def schmid_calc(b, n, T):
     anglen = np.arccos(np.dot(n, T) / np.linalg.norm(n))
     angleb = np.arccos(np.dot(b, T) / np.linalg.norm(b))
     s =np.cos(anglen) * np.cos(angleb)
-
+ 
     return s
 
 
@@ -113,38 +115,18 @@ def schmid(B, N, T):
 #
 ##############################"
 
-f= open("escaig-result.txt","w+") #file where results will be written
 
-b=np.array([1,1,0])
-n=np.array([1,1,1]) # Burgers and plane normals type in crystal coordinates
-b=schmid_pole(b)
-n=schmid_pole(n)
+b=np.array([0,1,1])
+n=np.array([-1,-1,1]) # Burgers vector and plane normals type in crystal coordinates
+
 T=np.array([0,0,1]) #straining axis in fixed coordinates
-phi1=0
+phi1,phi,phi2=-110.3,64.1,76.0 #orientation
+M=rotation(phi1,phi,phi2)
 
+P=schmid_calc(b,n,T) #Schmid factor
+bc=np.cross(n,b) #for positive shear (tension) the edge component of the Burgers vector is in the direction nxb, reverse for compression
 
-#####################"
-#
-# Ranging in phi1 and phi2, which describes a little larger standard triangle, nn to cover a larger area , nm to increase resolution
-#
-#####################"
-nn=1
-nm=1
-for phi in range(0,55*nn):
-	for phi2 in range(0,45*nn):
-		M=rotation(phi1,phi/nm,phi2/nm)
-		if np.dot(M.T[:,2],[0,-1,1])>=0 and np.dot(M.T[:,2],[-1,1,0])>=0: #to get the standard triangle
-			P=schmid(b,n,T)
-			Pmax=P[np.argmax(np.abs(P[:,0])),:] #get primary slip system with highest SF
-			bmax=Pmax[4:]
-			nmax=Pmax[1:4]
-			bc=np.cross(nmax,bmax) #inverse for compression
-			diff_s=schmid_calc(bc,nmax,T)
-			Z=M.T[:,2] #get the straining axis coordinate in crystal frame
-			Zp=proj(Z[0],Z[1],Z[2]) #stereographic projection
-			
-			f.write(str(Pmax[0])+','+str(diff_s)+','+str(Zp[0])+','+str(Zp[1])+','+str(phi1)+','+str(phi/nn)+','+str(phi2/nn)+'\n')
-	
+diff_s=schmid_calc(bc,n,T)/P #Escaig factor t_s/sigma_a
 
-f.close()
+print  bc,diff_s
 
