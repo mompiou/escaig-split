@@ -37,6 +37,28 @@ def rotation(phi1, phi, phi2):
                   [np.sin(phi) * np.sin(phi2), np.cos(phi2) * np.sin(phi), np.cos(phi)]], float)
     return R
 
+###################################################################
+#
+# Rotation around a given axis
+#
+##################################################################
+
+
+def Rot(th, a, b, c):
+    th = th * np.pi / 180
+    no = np.linalg.norm([a, b, c])
+    aa = a / no
+    bb = b / no
+    cc = c / no
+    c1 = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]], float)
+    c2 = np.array([[aa**2, aa * bb, aa * cc], [bb * aa, bb**2, bb * cc], [cc * aa,
+                                                                          cc * bb, cc**2]], float)
+    c3 = np.array([[0, -cc, bb], [cc, 0, -aa], [-bb, aa, 0]], float)
+    R = np.cos(th) * c1 + (1 - np.cos(th)) * c2 + np.sin(th) * c3
+
+    return R
+    
+
 def schmid_calc(b, n, T):
     global M
     n = np.dot(M, n)
@@ -47,6 +69,39 @@ def schmid_calc(b, n, T):
     s =np.cos(anglen) * np.cos(angleb)
 
     return s
+
+####################
+#
+# Get Shockley partials. Use the fact that for a given normal the leading partial is the one closest to the <001> direction between n and b. Equivalent to say that the leading partial is the one toward -n x xi in the Tompson tetrahedron.
+#
+#########################
+def shockley(b,n):
+	if b[0]==0:
+		c1=np.array([0,0,1])
+		c2=np.array([0,1,0])
+	
+	if b[1]==0:
+		c1=np.array([1,0,0])
+		c2=np.array([0,0,1])
+	
+	if b[2]==0:
+		c1=np.array([1,0,0])
+		c2=np.array([0,1,0])	
+	
+	if np.dot(c1,b)>0 and np.dot(c1,n)>0:
+			r=np.cross(n,c1)
+	elif np.dot(c1,b)<0 and np.dot(c1,n)<0:
+			r=np.cross(n,-c1)
+	else:
+		if np.dot(c2,b)>0 and np.dot(c2,n)>0:
+			r=np.cross(n,c2)
+		elif np.dot(c2,b)<0 and np.dot(c2,n)<0:
+			r=np.cross(n,-c2)
+	
+	sl=np.dot(Rot(90,r[0],r[1],r[2]),n)*np.sqrt(2)
+	st=6*(b/2-sl/6)	
+	
+	return st,sl
 
 
 def unique_rows(a):
@@ -113,15 +168,14 @@ def schmid(B, N, T):
 #
 ##############################"
 
-f= open("escaig-result.txt","w+") #file where results will be written
+f= open("escaig-result-compression.txt","w+") #file where results will be written
 
 b=np.array([1,1,0])
-n=np.array([1,1,1]) # Burgers and plane normals type in crystal coordinates
+n=np.array([1,1,1]) #primary Burgers and plane normals type in crystal coordinates
 b=schmid_pole(b)
 n=schmid_pole(n)
 T=np.array([0,0,1]) #straining axis in fixed coordinates
 phi1=0
-
 
 #####################"
 #
@@ -130,20 +184,29 @@ phi1=0
 #####################"
 nn=1
 nm=1
-for phi in range(0,55*nn):
-	for phi2 in range(0,45*nn):
+for phi in range(0,56*nn):
+	for phi2 in range(0,46*nn):
 		M=rotation(phi1,phi/nm,phi2/nm)
-		if np.dot(M.T[:,2],[0,-1,1])>=0 and np.dot(M.T[:,2],[-1,1,0])>=0: #to get the standard triangle
+		if np.dot(M.T[:,2],[0,-1,1])>-0.006: #to get the standard triangle
 			P=schmid(b,n,T)
 			Pmax=P[np.argmax(np.abs(P[:,0])),:] #get primary slip system with highest SF
 			bmax=Pmax[4:]
 			nmax=Pmax[1:4]
-			bc=np.cross(nmax,bmax) #inverse for compression
-			diff_s=schmid_calc(bc,nmax,T)
+			CS=np.delete(P,np.argmax(np.abs(P[:,0])),axis=0) #get the cross slip plane
+			CS=CS[(CS[:,4:]==bmax).all(axis=1)][0]
+			ncs=CS[1:4]
+			sl,st=shockley(bmax,nmax)
+			s1=schmid_calc(sl,nmax,T)
+			s2=schmid_calc(st,nmax,T)
+			diff_s=s1-s2
+			slcs,stcs=shockley(bmax,ncs)
+			s1cs=schmid_calc(slcs,ncs,T)
+			s2cs=schmid_calc(stcs,ncs,T)
+			diff_scs=s1cs-s2cs
 			Z=M.T[:,2] #get the straining axis coordinate in crystal frame
 			Zp=proj(Z[0],Z[1],Z[2]) #stereographic projection
 			
-			f.write(str(Pmax[0])+','+str(diff_s)+','+str(Zp[0])+','+str(Zp[1])+','+str(phi1)+','+str(phi/nn)+','+str(phi2/nn)+'\n')
+			f.write(str(np.abs(Pmax[0]))+','+str(diff_s)+','+str(diff_scs)+','+str(Zp[0])+','+str(Zp[1])+','+str(phi1)+','+str(phi/nn)+','+str(phi2/nn)+'\n')
 	
 
 f.close()
