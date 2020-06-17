@@ -67,14 +67,15 @@ def schmid_calc(b, n, T):
     anglen = np.arccos(np.dot(n, T) / np.linalg.norm(n))
     angleb = np.arccos(np.dot(b, T) / np.linalg.norm(b))
     s =np.cos(anglen) * np.cos(angleb)
-
+ 
     return s
 
 ####################
 #
-# Get Shockley partials for intrinsic fault. According to Hirth and lothe the partial for the intrinsic are such that the greek letter in the thompson tetrahedron notations is outside the fault. In tension, for an oriented dislocation, we know the sense of motion impose that the intrinsic fault move in the direction of the force and thus define the leading and trailing partial. So, we use the fact that for a given normal the trailing partial is the one closest to the <001> direction between n and b.
+# Get Shockley partials. 
 #
 #########################
+	
 def shockley(b,n):
 	if b[0]==0:
 		c1=np.array([0,0,1])
@@ -102,7 +103,6 @@ def shockley(b,n):
 	sl=6*(b/2-st/6)	
 	
 	return sl,st
-
 
 def unique_rows(a):
     a = np.ascontiguousarray(a)
@@ -168,46 +168,25 @@ def schmid(B, N, T):
 #
 ##############################"
 
-f= open("escaig-result.txt","w+") #file where results will be written
 
-b=np.array([1,1,0])
-n=np.array([1,1,1]) #primary Burgers and plane normals type in crystal coordinates
-b=schmid_pole(b)
-n=schmid_pole(n)
-T=np.array([0,0,1]) #straining axis in fixed coordinates
-phi1=0
+b=np.array([0,-1,1])
+n=np.array([1,-1,-1]) #primary Burgers and plane normals type in crystal coordinates
 
-#####################"
-#
-# Ranging in phi1 and phi2, which describes a little larger standard triangle, nn to cover a larger area , nm to increase resolution
-#
-#####################"
-nn=1
-nm=1
-for phi in range(0,56*nn):
-	for phi2 in range(0,46*nn):
-		M=rotation(phi1,phi/nm,phi2/nm)
-		if np.dot(M.T[:,2],[0,-1,1])>-0.006: #to get the standard triangle
-			P=schmid(b,n,T)
-			Pmax=P[np.argmax(np.abs(P[:,0])),:] #get primary slip system with highest SF
-			bmax=Pmax[4:]
-			nmax=Pmax[1:4]
-			CS=np.delete(P,np.argmax(np.abs(P[:,0])),axis=0) #get the cross slip plane
-			CS=CS[(CS[:,4:]==bmax).all(axis=1)][0]
-			ncs=CS[1:4]
-			sl,st=shockley(bmax,nmax)
-			s1=schmid_calc(sl,nmax,T)
-			s2=schmid_calc(st,nmax,T)
-			diff_s=s1-s2
-			slcs,stcs=shockley(bmax,ncs)
-			s1cs=schmid_calc(slcs,ncs,T)
-			s2cs=schmid_calc(stcs,ncs,T)
-			diff_scs=s1cs-s2cs
-			Z=M.T[:,2] #get the straining axis coordinate in crystal frame
-			Zp=proj(Z[0],Z[1],Z[2]) #stereographic projection
-			
-			f.write(str(np.abs(Pmax[0]))+','+str(diff_s)+','+str(diff_scs)+','+str(Zp[0])+','+str(Zp[1])+','+str(phi1)+','+str(phi/nn)+','+str(phi2/nn)+'\n')
-	
+T=np.array([0,1,0]) #straining axis in fixed coordinates
+phi1,phi,phi2=-179.0,62.3,118.7
 
-f.close()
+M=rotation(phi1,phi,phi2)
+
+
+SF=schmid_calc(b,n,T)
+sl,st=shockley(b,n)
+s1=schmid_calc(sl,n,T)
+s2=schmid_calc(st,n,T)
+diff_s=s1-s2
+
+print 'Schmid factor: ',SF
+print 'Escaig factor:', diff_s
+print 'partials (leading and trailing): ',sl,st
+print 'Schmid factor on leading and trailing: ', s1,s2
+
 

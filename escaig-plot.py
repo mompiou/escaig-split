@@ -22,20 +22,20 @@ a=figure.add_subplot('111')
 
 #r=np.max((np.abs(data[:,2].max()),np.abs(data[:,2].min())))
 #levels=np.linspace(-r, r,num=255)
-#sc=a.tricontourf(data[:,3],data[:,4], -data[:,2], levels=levels,cmap=plt.cm.seismic)
+#sc=a.tricontourf(data[:,3],data[:,4], data[:,2], levels=levels,cmap=plt.cm.seismic)
 
 ###################
 # td' primary 
 
-#r=np.max((np.abs(data[:,1].max()),np.abs(data[:,1].min())))
-#levels=np.linspace(-r, r,num=255)
-#sc=a.tricontourf(data[:,3],data[:,4], data[:,1], levels=levels,cmap=plt.cm.seismic)
+r=np.max((np.abs(data[:,1].max()),np.abs(data[:,1].min())))
+levels=np.linspace(-r, r,num=255)
+sc=a.tricontourf(data[:,3],data[:,4], data[:,1], levels=levels,cmap=plt.cm.seismic)
 
 
 ######################
 #orientation factor
-m=((-2*data[:,2]/3+data[:,1])/data[:,0])
-sc=a.tricontourf(data[:,3],data[:,4], m,301,cmap=plt.cm.seismic)
+#m=(data[:,2]-data[:,1])/np.abs(data[:,0])
+#sc=a.tricontourf(data[:,3],data[:,4], m,cmap=plt.cm.seismic)
 #a.tricontour(data[:,3],data[:,4], m, colors='k')
 
 
